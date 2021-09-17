@@ -41,7 +41,7 @@ https://github.com/benhoyt/inih/commit/74d2ca064fb293bc60a77b0bd068075b293cf175.
 #include "openavb_log.h"
 
 // needed for gptplocaltime()
-extern gPtpTimeData gPtpTD;
+extern gPtpTimeData gPtpTD_;
 
 void *atlRawsockOpen(atl_rawsock_t* rawsock, const char *ifname, bool rx_mode, bool tx_mode, U16 ethertype, U32 frame_size, U32 num_frames)
 {
@@ -206,7 +206,7 @@ bool atlRawsockTxFrameReady(void *pvRawsock, U8 *pBuffer, unsigned int len, U64 
 	rawsock->tx_packet->len = len;
 
 #if ATL_LAUNCHTIME_ENABLED
-	gptpmaster2local(&gPtpTD, timeNsec, &rawsock->tx_packet->attime);
+	gptpmaster2local(&gPtpTD_, timeNsec, &rawsock->tx_packet->attime);
 #else
     rawsock->tx_packet->attime = 0;
 #endif

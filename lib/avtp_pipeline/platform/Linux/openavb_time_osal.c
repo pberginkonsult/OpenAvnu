@@ -51,7 +51,7 @@ static pthread_mutex_t gOSALTimeInitMutex = PTHREAD_MUTEX_INITIALIZER;
 static bool bInitialized = FALSE;
 static int gPtpShmFd = -1;
 static char *gPtpMmap = NULL;
-gPtpTimeData gPtpTD;
+gPtpTimeData gPtpTD_;
 
 static bool x_timeInit(void) {
 	AVB_TRACE_ENTRY(AVB_TRACE_TIME);
@@ -62,15 +62,15 @@ static bool x_timeInit(void) {
 		return FALSE;
 	}
 
-	if (gptpgetdata(gPtpMmap, &gPtpTD) < 0) {
+	if (gptpgetdata(gPtpMmap, &gPtpTD_) < 0) {
 		AVB_LOG_ERROR("GPTP data fetch failed");
 		AVB_TRACE_EXIT(AVB_TRACE_TIME);
 		return FALSE;
 	}
 
-	AVB_LOGF_INFO("local_time = %" PRIu64, gPtpTD.local_time);
-	AVB_LOGF_INFO("ml_phoffset = %" PRId64 ", ls_phoffset = %" PRId64, gPtpTD.ml_phoffset, gPtpTD.ls_phoffset);
-	AVB_LOGF_INFO("ml_freqffset = %Lf, ls_freqoffset = %Lf", gPtpTD.ml_freqoffset, gPtpTD.ls_freqoffset);
+	AVB_LOGF_INFO("local_time = %" PRIu64, gPtpTD_.local_time);
+	AVB_LOGF_INFO("ml_phoffset = %" PRId64 ", ls_phoffset = %" PRId64, gPtpTD_.ml_phoffset, gPtpTD_.ls_phoffset);
+	AVB_LOGF_INFO("ml_freqffset = %Lf, ls_freqoffset = %Lf", gPtpTD_.ml_freqoffset, gPtpTD_.ls_freqoffset);
 
 	AVB_TRACE_EXIT(AVB_TRACE_TIME);
 	return TRUE;
@@ -79,7 +79,7 @@ static bool x_timeInit(void) {
 static bool x_getPTPTime(U64 *timeNsec) {
 	AVB_TRACE_ENTRY(AVB_TRACE_TIME);
 
-	if (gptpgetdata(gPtpMmap, &gPtpTD) < 0) {
+	if (gptpgetdata(gPtpMmap, &gPtpTD_) < 0) {
 		AVB_LOG_ERROR("GPTP data fetch failed");
 		AVB_TRACE_EXIT(AVB_TRACE_TIME);
 		return FALSE;
@@ -90,10 +90,10 @@ static bool x_getPTPTime(U64 *timeNsec) {
 	int64_t delta_8021as;
 	int64_t delta_local;
 
-	if (gptplocaltime(&gPtpTD, &now_local)) {
-		update_8021as = gPtpTD.local_time - gPtpTD.ml_phoffset;
-		delta_local = now_local - gPtpTD.local_time;
-		delta_8021as = gPtpTD.ml_freqoffset * delta_local;
+	if (gptplocaltime(&gPtpTD_, &now_local)) {
+		update_8021as = gPtpTD_.local_time - gPtpTD_.ml_phoffset;
+		delta_local = now_local - gPtpTD_.local_time;
+		delta_8021as = gPtpTD_.ml_freqoffset * delta_local;
 		*timeNsec = update_8021as + delta_8021as;
 
 		AVB_TRACE_EXIT(AVB_TRACE_TIME);
