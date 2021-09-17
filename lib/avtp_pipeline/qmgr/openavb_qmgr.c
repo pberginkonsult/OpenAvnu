@@ -143,6 +143,7 @@ static bool setupHWQueue(int nClass, unsigned classBytesPerSec)
 	return !err;
 }
 
+#ifdef AVB_FEATURE_FQTSS
 /* Add a stream.
  *
  * 	nClass = index of class (A, B, etc.)
@@ -349,3 +350,4 @@ void openavbQmgrFinalize(void)
 	UNLOCK();
 	AVB_TRACE_EXIT(AVB_TRACE_QUEUE_MANAGER);
 }
+#endif //AVB_FEATURE_FQTSS
